@@ -1,0 +1,242 @@
+---
+version: "3"
+
+vars:
+  VENV_DIR: .venv
+  PYTHON:
+    sh: |
+      if [ -n "$VIRTUAL_ENV" ]; then
+        echo "python"
+      elif [ -f {{.VENV_DIR}}/bin/python ]; then
+        echo "{{.VENV_DIR}}/bin/python"
+      else
+        echo "python3"
+      fi
+
+  PIP:
+    sh: |
+      if [ -n "$VIRTUAL_ENV" ]; then
+        echo "pip"
+      elif [ -f {{.VENV_DIR}}/bin/pip ]; then
+        echo "{{.VENV_DIR}}/bin/pip"
+      else
+        echo "python3 -m pip"
+      fi
+
+  AERICH:
+    sh: |
+      if [ -n "$VIRTUAL_ENV" ]; then
+        echo "aerich"
+      elif [ -f {{.VENV_DIR}}/bin/aerich ]; then
+        echo "{{.VENV_DIR}}/bin/aerich"
+      else
+        echo "python3 -m aerich"
+      fi
+
+tasks:
+  venv:
+    desc: "Create virtual environment"
+    status:
+      - test -d {{.VENV_DIR}}
+    cmds:
+      - python3 -m venv {{.VENV_DIR}}
+      - echo "✅ Virtual environment created at {{.VENV_DIR}}"
+      - echo "💡 Activate with - source {{.VENV_DIR}}/bin/activate"
+
+  install:
+    desc: "Install dependencies"
+    cmds:
+      - "{{.PIP}} install --upgrade pip"
+      - "{{.PIP}} install -r requirements.txt"
+      - echo "Dependencies installed"
+
+  install:dev:
+    desc: "Install dependencies for development"
+    cmds:
+      - "{{.PIP}} install --upgrade pip"
+      - "{{.PIP}} install -r requirements-dev.txt"
+      - echo "Dependencies (dev) installed"
+
+  setup:
+    desc: "First-time project setup (venv, dependencies, database)"
+    cmds:
+      - task: venv
+      - task: install:dev
+      - task: db:init
+      - task: db:migration:init
+      - echo "🎉 Setup complete! Activate venv with - source {{.VENV_DIR}}/bin/activate"
+
+  db:init:
+    desc: "Initialize aerich configuration (once per installation)"
+    cmds:
+      - "{{.AERICH}} init -t config.TORTOISE_CONFIG"
+      - echo "Aerich initialization completed"
+
+  db:migration:init:
+    desc: "Initialize database schema from models"
+    cmds:
+      - "{{.AERICH}} init-db"
+      - echo "Database schema initialized"
+
+  db:migration:create:
+    desc: "Create a new migration from model changes"
+    cmds:
+      - '{{.AERICH}} migrate --name {{.CLI_ARGS | default "auto"}}'
+      - echo "Database schema created"
+
+  db:migration:apply:
+    desc: "Apply pending migration"
+    cmds:
+      - "{{.AERICH}} upgrade"
+      - echo "Migration applied"
+
+  db:migration:rollback:
+    desc: "Rollback last migration"
+    cmds:
+      - "{{.AERICH}} downgrade"
+      - echo "Migration rolled back"
+
+  db:migration:history:
+    desc: "Show migration history"
+    cmds:
+      - "{{.AERICH}} history"
+
+  db:status:
+    desc: "Check database connection and current migration status"
+    silent: true
+    cmds:
+      - |
+        echo "📊 Database Status"
+        echo "─────────────────────────────────────"
+        if [ -f "aerich.ini" ]; then
+          echo "✅ Aerich initialized"
+        else
+          echo "❌ Aerich not initialized - run task db:init"
+        fi
+        if [ -d "migrations" ]; then
+          echo "✅ Migrations directory exists"
+          echo "Migrations count - $(find migrations -name '*.sql' 2>/dev/null | wc -l)"
+        else
+          echo "❌ No migrations - run task db:migration:init"
+        fi
+        {{.AERICH}} history 2>/dev/null || echo "⚠️  Cannot read migration history"
+
+  db:reset:
+    desc: "Reset database and recreate tables (DELETES ALL DATA)"
+    prompt: "This will DELETE ALL DATA in the database. Continue?"
+    cmds:
+      - rm -rf migrations/
+      - "{{.AERICH}} init-db"
+      - echo "⚠️  Database was reset - all data deleted"
+
+  run:
+    desc: "Start the bot"
+    cmds:
+      - "{{.PYTHON}} main.py"
+
+  run:dev:
+    desc: "Run in development mode (watchdog)"
+    preconditions:
+      - sh: "{{.PYTHON}} -c 'import watchdog' 2>/dev/null"
+        msg: "Watchdog not found. Install with: pip install watchdog"
+    cmds:
+      - "{{.PYTHON}} -m watchdog.watchmedo auto-restart --directory=./ --pattern=*.py --recursive -- {{.PYTHON}} main.py"
+
+  lint:
+    desc: "Run linter (ruff)"
+    cmds:
+      - "{{.PYTHON}} -m ruff check ."
+
+  lint:fix:
+    desc: "Auto-fix linting issues"
+    cmds:
+      - "{{.PYTHON}} -m ruff check --fix ."
+
+  format:
+    desc: "Format code with ruff"
+    cmds:
+      - "{{.PYTHON}} -m ruff format ."
+
+  format:check:
+    desc: "Check code formatting without modifying files"
+    cmds:
+      - "{{.PYTHON}} -m ruff format --check ."
+
+  typecheck:
+    desc: "Run type checker (basedpyright)"
+    cmds:
+      - "{{.PYTHON}} -m basedpyright"
+
+  test:
+    desc: "Run tests"
+    cmds:
+      - "{{.PYTHON}} -m pytest"
+
+  qa:
+    desc: "Run all quality checks (lint, format check, typecheck)"
+    cmds:
+      - echo "🔍 Running quality checks..."
+      - task: lint
+      - task: format:check
+      - task: typecheck
+      - echo "✅ All quality checks passed!"
+
+  ci:
+    desc: "Run CI/CD checks (suitable for continuous integration)"
+    cmds:
+      - task: qa
+      - task: test
+      - echo "✅ All CI/CD checks passed!"
+
+  clean:
+    desc: "Clean up generated files"
+    cmds:
+      - rm -rf __pycache__ .pytest_cache .ruff_cache
+      - find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+      - find . -type f -name "*.pyc" -delete 2>/dev/null || true
+  clean:all:
+    desc: "Clean everything including local venv"
+    prompt: "This will remove {{.VENV_DIR}}. Continue?"
+    cmds:
+      - task: clean
+      - rm -rf {{.VENV_DIR}}
+
+  shell:
+    desc: "Open Python shell with project context"
+    cmds:
+      - '{{.PYTHON}} -i -c ''from tortoise import Tortoise; import asyncio; from config import settings; from bot.models import *; print("🐢 Tortoise ORM loaded. Models imported.")'''
+
+  info:
+    desc: "Show project and environment info"
+    silent: true
+    cmds:
+      - echo "🤖 Debate Bot Project"
+      - echo "─────────────────────────────"
+      - echo "Python - $({{.PYTHON}} --version)"
+      - echo "Python path - $(which {{.PYTHON}})"
+      - echo "Pip - {{.PIP}}"
+      - echo "Aerich - {{.AERICH}}"
+      - |
+        if [ -n "$VIRTUAL_ENV" ]; then
+          echo "Venv - $VIRTUAL_ENV (active)"
+        elif [ -d "{{.VENV_DIR}}" ]; then
+          echo "Venv - {{.VENV_DIR}} (not active)"
+        else
+          echo "Venv - None"
+        fi
+      - echo "Database - $(grep DATABASE_URL .env 2>/dev/null | cut -d= -f2 || echo 'Not configured')"
+
+  check-venv:
+    desc: "Check virtual environment status"
+    silent: true
+    cmds:
+      - |
+        if [ -n "$VIRTUAL_ENV" ]; then
+          echo "✅ Virtual environment is active - $VIRTUAL_ENV"
+        elif [ -d "{{.VENV_DIR}}" ]; then
+          echo "⚠️  Virtual environment exists at {{.VENV_DIR}} but is NOT active"
+          echo "💡 Activate with - source {{.VENV_DIR}}/bin/activate"
+        else
+          echo "❌ No virtual environment found"
+          echo "💡 Create one with - go-task venv"
+        fi

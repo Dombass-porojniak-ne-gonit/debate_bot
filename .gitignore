@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+.venv
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Project specific
+.env
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+pyrightconfig.json
+
+# OS
+.DS_Store
+Thumbs.db
+dev/
