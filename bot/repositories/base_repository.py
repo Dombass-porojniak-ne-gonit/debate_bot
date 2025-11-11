@@ -17,7 +17,7 @@ class BaseRepository(Generic[T]):
         self.model = model
 
     async def create(self, **kwargs: object) -> T | None:
-        return await self.model.create(kwargs=kwargs)
+        return await self.model.create(**kwargs)
 
     async def get_or_create(
         self, defaults: ModelData | None = None, **filters: object

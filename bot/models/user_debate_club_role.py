@@ -1,11 +1,10 @@
 from tortoise import fields
 from tortoise.fields.relational import ForeignKeyFieldInstance
 
-from .debate_club import DebateClub
-from .user import User
-
 from .base import BaseModel
-from .enums import ClubRole
+from .debate_club import DebateClub
+from .enums import ClubRoleEnum
+from .user import User
 
 
 class UserDebateClubRole(BaseModel):
@@ -13,7 +12,7 @@ class UserDebateClubRole(BaseModel):
         table = "user_debate_club_role"
         unique_together = ("user", "debate_club")
 
-    role = fields.IntEnumField(ClubRole, default=ClubRole.MEMBER, max_length=50)
+    role = fields.IntEnumField(ClubRoleEnum, default=ClubRoleEnum.MEMBER, max_length=50)
     user: ForeignKeyFieldInstance[User] = fields.ForeignKeyField(
         "models.User", related_name="debate_club_roles"
     )

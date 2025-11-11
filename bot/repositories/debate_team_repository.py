@@ -1,9 +1,9 @@
 from bot.models import DebateTeam
 
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 
-class TeamRepository(BaseRepository[DebateTeam]):
+class DebateTeamRepository(BaseRepository[DebateTeam]):
     def __init__(self):
         super().__init__(DebateTeam)
 

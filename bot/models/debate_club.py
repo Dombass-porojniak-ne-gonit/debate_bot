@@ -7,7 +7,7 @@ class DebateClub(BaseModel):
     class Meta:
         table = "debate_club"
 
-    telegram_id = fields.IntField(unique=True)
+    telegram_id = fields.BigIntField(unique=True)
     telegram_link = fields.CharField(max_length=255)
 
     name = fields.CharField(max_length=255)

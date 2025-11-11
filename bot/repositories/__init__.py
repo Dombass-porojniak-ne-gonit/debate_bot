@@ -1,21 +1,23 @@
-from .base import BaseRepository
+from .base_repository import BaseRepository
 from .debate_club_repository import DebateClubRepository
+from .debate_game_repository import DebateGameRepository
 from .debate_motion_repository import DebateMotionRepository
-from .game_repository import GameRepository
-from .participant_repository import ParticipantRepository
-from .result_repository import ResultRepository
-from .room_repository import RoomRepository
-from .team_repository import TeamRepository
+from .debate_participant_repository import DebateParticipantRepository
+from .debate_room_repository import DebateRoomRepository
+from .debate_room_result_repository import DebateRoomResultRepository
+from .debate_team_repository import DebateTeamRepository
+from .user_debate_club_role_repository import UserDebateClubRoleRepository
 from .user_repository import UserRepository
 
 __all__ = [
     "BaseRepository",
     "DebateClubRepository",
+    "DebateGameRepository",
     "DebateMotionRepository",
-    "GameRepository",
-    "ParticipantRepository",
-    "ResultRepository",
-    "RoomRepository",
-    "TeamRepository",
+    "DebateParticipantRepository",
+    "DebateRoomRepository",
+    "DebateRoomResultRepository",
+    "DebateTeamRepository",
+    "UserDebateClubRoleRepository",
     "UserRepository",
 ]

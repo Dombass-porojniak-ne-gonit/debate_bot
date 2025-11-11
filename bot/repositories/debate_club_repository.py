@@ -1,6 +1,6 @@
 from bot.models import DebateClub
 
-from .base import BaseRepository
+from .base_repository import BaseRepository
 
 
 class DebateClubRepository(BaseRepository[DebateClub]):
@@ -14,4 +14,9 @@ class DebateClubRepository(BaseRepository[DebateClub]):
         self, query: str, limit: int = 10, offset: int = 0
     ) -> list[DebateClub]:
         """case-insensitive"""
-        return await self.model.filter(name__icontains=query).limit(limit).offset(offset).all()
+        return (
+            await self.model.filter(name__icontains=query)
+            .limit(limit)
+            .offset(offset)
+            .all()
+        )

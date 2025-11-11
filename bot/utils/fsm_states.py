@@ -5,3 +5,7 @@ class RegistrationStates(StatesGroup):
     waiting_for_first_name = State()
     waiting_for_last_name = State()
     waiting_for_phone_number = State()
+
+
+class DebateCreationCommand(StatesGroup):
+    waiting_for = State()

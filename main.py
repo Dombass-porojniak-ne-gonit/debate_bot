@@ -1,10 +1,11 @@
 import asyncio
-import logging
 
 from aiogram import Bot, Dispatcher
 from aiogram.fsm.storage.memory import MemoryStorage
 from dotenv import load_dotenv
 
+from bot.middlewares.dependencies import DependencyInjectionMiddleware
+from bot.middlewares.logging import ConsoleLoggingMiddleware, TelegramLoggingMiddleware
 from bot.routers import setup_routers
 from config import settings
 from db import close_db, init_db
@@ -15,20 +16,23 @@ bot = Bot(token=settings.bot_token)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
+# Setup middlewares
+dp.message.middleware(ConsoleLoggingMiddleware())
+dp.message.middleware(TelegramLoggingMiddleware(bot))
+dp.message.middleware(DependencyInjectionMiddleware())
+dp.callback_query.middleware(ConsoleLoggingMiddleware())
+dp.callback_query.middleware(TelegramLoggingMiddleware(bot))
+dp.callback_query.middleware(DependencyInjectionMiddleware())
+dp.chat_member.middleware(DependencyInjectionMiddleware())
+
 dp.include_router(setup_routers())
 
 
 async def main() -> None:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-
     try:
         # Initialize database
         await init_db()
 
-        # Start polling
         await dp.start_polling(bot)
     finally:
         # Cleanup database connections

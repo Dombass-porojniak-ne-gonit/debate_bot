@@ -14,6 +14,9 @@ class Settings(BaseSettings):
 
     # Bot
     bot_token: str = Field(..., description="Telegram Bot API token")
+    devel_chat_id: str | None = Field(
+        None, description="Telegram chat ID for development logs (optional)"
+    )
 
     # Database
     database_url: str = Field(..., description="PostgreSQL connection URL")

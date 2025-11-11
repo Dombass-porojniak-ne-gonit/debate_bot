@@ -4,7 +4,9 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder, ReplyKeyboardBuilder
 
 def build_welcome_keyboard() -> InlineKeyboardMarkup:
     builder = InlineKeyboardBuilder()
-    builder.button(text="Зареєструватися", callback_data="start_registration")
+    builder.button(
+        text="Зареєструватися", callback_data="private.user.start_registration"
+    )
     builder.adjust(1)
     return builder.as_markup()
 

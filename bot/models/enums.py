@@ -1,14 +1,14 @@
 from enum import IntEnum, StrEnum
 
 
-class DebateTeamPosition(IntEnum):
+class DebateTeamPositionEnum(IntEnum):
     G1 = 1
     G2 = 2
     O1 = 3
     O2 = 4
 
 
-class GameStatus(StrEnum):
+class GameStatusEnum(StrEnum):
     REGISTRATION = "REGISTRATION"
     COMPLETED = "COMPLETED"
     CANCELLED = "CANCELLED"
@@ -21,7 +21,7 @@ class AttendanceStatus(IntEnum):
     WITHDRAWN = 4
 
 
-class ClubRole(IntEnum):
+class ClubRoleEnum(IntEnum):
     MEMBER = 1  # Can play as player/wing/viewer judge assignment only by admin or owner
     JUDGE = 2  # Can assign himself to rooms as judge
     ADMIN = 3  # Manage bot

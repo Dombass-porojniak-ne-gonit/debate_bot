@@ -1,20 +1,20 @@
 from bot.repositories import (
     DebateMotionRepository,
-    ResultRepository,
-    RoomRepository,
-    TeamRepository,
+    DebateRoomRepository,
+    DebateRoomResultRepository,
+    DebateTeamRepository,
     UserRepository,
 )
 
 
-class RoomService:
+class DebateRoomService:
     def __init__(
         self,
-        room_repo: RoomRepository,
-        team_repo: TeamRepository,
+        room_repo: DebateRoomRepository,
+        team_repo: DebateTeamRepository,
         motion_repo: DebateMotionRepository,
         user_repo: UserRepository,
-        result_repo: ResultRepository,
+        result_repo: DebateRoomResultRepository,
     ) -> None:
         self.room_repo = room_repo
         self.team_repo = team_repo

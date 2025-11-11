@@ -1,10 +1,9 @@
 from tortoise import fields
 from tortoise.fields.relational import ForeignKeyFieldInstance
 
-from .debate_room import DebateRoom
-
 from .base import BaseModel
-from .enums import DebateTeamPosition
+from .debate_room import DebateRoom
+from .enums import DebateTeamPositionEnum
 
 
 class DebateTeam(BaseModel):
@@ -15,6 +14,6 @@ class DebateTeam(BaseModel):
         "models.DebateRoom", related_name="teams", on_delete=fields.CASCADE
     )
 
-    position = fields.IntEnumField(DebateTeamPosition, default=None, null=True)
+    position = fields.IntEnumField(DebateTeamPositionEnum, default=None, null=True)
 
     rank = fields.IntField(null=True)

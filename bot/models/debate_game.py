@@ -1,11 +1,10 @@
 from tortoise import fields
 from tortoise.fields.relational import ForeignKeyFieldInstance
 
-from .debate_club import DebateClub
-from .user import User
-
 from .base import BaseModel
-from .enums import GameStatus
+from .debate_club import DebateClub
+from .enums import GameStatusEnum
+from .user import User
 
 
 class DebateGame(BaseModel):
@@ -15,11 +14,12 @@ class DebateGame(BaseModel):
     debate_club: ForeignKeyFieldInstance[DebateClub] = fields.ForeignKeyField(
         "models.DebateClub", related_name="games", on_delete=fields.CASCADE
     )
+    telegram_group_message_id = fields.BigIntField(unique=True)
 
     name = fields.CharField(max_length=255)
     description = fields.TextField(null=True)
     status = fields.CharEnumField(
-        GameStatus, default=GameStatus.REGISTRATION, max_length=20
+        GameStatusEnum, default=GameStatusEnum.REGISTRATION, max_length=20
     )
     date = fields.DateField()
     time = fields.TimeField(null=True)
